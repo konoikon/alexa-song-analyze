@@ -1,37 +1,52 @@
-const api = require('node-genius');
+var request = require('request-promise');
 
-const GENIUS_CLIENT_ACCESS_TOKEN = "RvX2l6c-PHETo3i7x_QDF_hH9AzfSjHdBk3iFmG7U7NZtOdo4iPds44xXH_dXvq1";
-const geniusClient = new api(GENIUS_CLIENT_ACCESS_TOKEN);
+const ACCESS_TOKEN = '';
+var searchQ = 'Gimme Shelter';
 
-const song = "Bodak Yellow";
-var str = "";
+const BASE_URL = 'https://api.genius.com/'
 
-geniusClient.search(song, function (error, results) {
-    if (error) {
-        throw new Error("Error in search");
-    } else {
-        result = JSON.parse(results);
-        song_id = (result.response.hits[0].result.api_path).substring(7);
-        geniusClient.getSong(song_id, function (error, results) {
-            if (error) {
-                throw new Error("Error in getSong");
+function api_request(options, cb) {
+    var default_req = request.defaults({
+        baseUrl: BASE_URL,
+        headers: {'Authorization': 'Bearer ' + ACCESS_TOKEN}
+    });
+
+    let promise = new Promise(function(resolve, reject) {
+        default_req(options, function(err, response) {
+            if (response.statusCode != 200) {
+                var payload = {
+                    'Error': response,
+                    'Status': response.statusCode
+                };
+                reject(payload);
             } else {
-                annotations = JSON.parse(results).response.song.description.dom.children;
-                annotations.forEach(element => {
-                    console.log(element);
-                });
+                resolve(response);
             }
         });
-    }
-});
+    });
 
-function findValues(node) {
-    if (node.children === undefined) {
-        str += node;
-    } else {
-        for (var i=0; i<node.length; i++) {
-            console.log(i);
-            findValues(node[i]);
-        }
-    }
+    return promise;
 }
+
+function request_promise(request) {
+    return new Promise(function(resolve, reject) {
+        api_request(request).then(function(data) {
+            resolve(JSON.parse(data.body));
+        }).catch(function(data) {
+            reject(data);
+        });
+    });
+}
+
+function search(query) {
+    let request = {
+        url: 'search',
+        qs: {'q': query}
+    }
+
+    return request_promise(request);
+}
+
+search('Miidle Child').then((response) => {
+    console.log(response.response.hits[0].result.api_path);
+});
