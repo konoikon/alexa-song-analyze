@@ -1,8 +1,6 @@
 var request = require('request-promise');
 
-const ACCESS_TOKEN = '';
-var searchQ = 'Gimme Shelter';
-
+const ACCESS_TOKEN = 'AFweoWs57FJjiw9tYVNyuWLw2EHDedRjPwwS-JPDEijW3C156lLcSqRiuWIR7MT6';
 const BASE_URL = 'https://api.genius.com/'
 
 function api_request(options, cb) {
@@ -13,7 +11,7 @@ function api_request(options, cb) {
 
     let promise = new Promise(function(resolve, reject) {
         default_req(options, function(err, response) {
-            if (response.statusCode != 200) {
+            if (response.statusCode !== 200) {
                 var payload = {
                     'Error': response,
                     'Status': response.statusCode
@@ -38,15 +36,12 @@ function request_promise(request) {
     });
 }
 
-function search(query) {
-    let request = {
-        url: 'search',
-        qs: {'q': query}
+module.exports = { 
+    search: function(query) {
+        let request = {
+            url: 'search',
+            qs: {'q': query}
+        }
+        return request_promise(request);
     }
-
-    return request_promise(request);
 }
-
-search('Miidle Child').then((response) => {
-    console.log(response.response.hits[0].result.api_path);
-});
